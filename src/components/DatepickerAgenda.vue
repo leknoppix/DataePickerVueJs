@@ -249,7 +249,7 @@
       </div>
       <div class="datepicker__schedule">
         <div class="datepicker__schedule__hour">
-          <select>
+          <select @change="selectHour($event)">
             <option v-for="hour in hours" :key="hour" :value="hour">
               {{ hour }}
             </option>
@@ -257,7 +257,7 @@
         </div>
         <div class="datepicker__schedule__separator">:</div>
         <div class="datepicker__schedule__minute">
-          <select>
+          <select @change="selectMinute($event)">
             <option v-for="minute in minutes" :key="minute" :value="minute">
               {{ minute }}
             </option>
@@ -285,16 +285,16 @@ export default {
       days: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
       hours: [],
       minutes: [],
-      month: new Month(new Intl.DateTimeFormat('fr-FR', {month: 'numeric'}).format(new Date(this.date)), new Intl.DateTimeFormat('fr-FR', {year: 'numeric'}).format(new Date(this.date))), // new Month(this.date.month(), this.date.year()),
-      hour: parseInt(new Intl.DateTimeFormat('fr-FR', {hour: '2-digit'}).format(new Date(this.date))), // this.date.hour(),
-      minute: new Intl.DateTimeFormat('fr-FR', {minute: '2-digit'}).format(new Date(this.date)), // this.date.minute(),
+      month: new Month(new Intl.DateTimeFormat('fr-FR', {month: 'numeric'}).format(new Date(this.date)), new Intl.DateTimeFormat('fr-FR', {year: 'numeric'}).format(new Date(this.date))),
+      hour: parseInt(new Intl.DateTimeFormat('fr-FR', {hour: '2-digit'}).format(new Date(this.date))),
+      minute: new Intl.DateTimeFormat('fr-FR', {minute: '2-digit'}).format(new Date(this.date)),
       lastdate: new Date(this.date),
       newdate: null
     }
   },
   methods: {
     Minutes: function () {
-      for (var i = 0; i < 60; i++) {
+      for (var i = 0; i < 60; i = i + 1) {
         this.minutes.push(String(i).padStart(2, '0'))
       }
       return this.minutes
@@ -310,6 +310,16 @@ export default {
     },
     selectDate: function (day) {
       this.newdate = new Date(day).setHours(this.hour, this.minute)
+      this.$emit('change', this.newdate)
+    },
+    selectHour: function (hour) {
+      this.hour = hour.target.value
+      this.newdate = new Date(this.date).setHours(this.hour, this.minute)
+      this.$emit('change', this.newdate)
+    },
+    selectMinute: function (minute) {
+      this.minute = minute.target.value
+      this.newdate = new Date(this.date).setHours(this.hour, this.minute)
       this.$emit('change', this.newdate)
     },
     nextMonth: function () {
@@ -340,14 +350,14 @@ export default {
     }
   },
   computed: {
-    year: function () { // this.date.format('Y')
+    year: function () {
       return new Intl.DateTimeFormat('fr-FR', {year: 'numeric'}).format(new Date(this.date))
     },
     date_formatted: function () {
-      let jour = new Intl.DateTimeFormat('fr-FR', {weekday: 'long'}).format(new Date(this.date)) // this.date.format('dddd')
+      let jour = new Intl.DateTimeFormat('fr-FR', {weekday: 'long'}).format(new Date(this.date))
       let chiffre = new Intl.DateTimeFormat('fr-FR', {day: '2-digit'}).format(new Date(this.date))
       let jourletter = jour.charAt(0).toUpperCase() + jour.slice(1)
-      let month = new Intl.DateTimeFormat('fr-FR', {month: 'short'}).format(new Date(this.date)) // this.date.format('MMMM')
+      let month = new Intl.DateTimeFormat('fr-FR', {month: 'short'}).format(new Date(this.date))
       let monthletter = month.charAt(0).toUpperCase() + month.slice(1)
       return jourletter + ' ' + chiffre + ' ' + monthletter
     }
