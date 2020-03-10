@@ -242,14 +242,14 @@
       </div>
       <div class="datepicker__days">
         <div class="datepicker__day" v-bind:style="{width: ( month.getWeekStart() * 41 ) + 'px' }"></div>
-        <div class="datepicker__day" @click="selectDate(day)" v-for="day in month.getDays()" :key="day.id" :class="{selected: isSelected(day)}">
+        <div class="datepicker__day" v-on:click="selectDate(day)" v-for="day in month.getDays()" :key="day.id" :class="{selected: isSelected(day)}">
           <span class="datepicker__day__effect"></span>
-          <span class="datepicker__day__text">{{ new Intl.DateTimeFormat('fr-FR', {day: 'numeric'}).format(new Date(day)) }}</span>
+          <span class="datepicker__day__text">{{ day.format('D') }}</span>
         </div>
       </div>
       <div class="datepicker__schedule">
         <div class="datepicker__schedule__hour">
-          <select @change="selectHour($event)">
+          <select>
             <option v-for="hour in hours" :key="hour" :value="hour">
               {{ hour }}
             </option>
@@ -257,7 +257,7 @@
         </div>
         <div class="datepicker__schedule__separator">:</div>
         <div class="datepicker__schedule__minute">
-          <select @change="selectMinute($event)">
+          <select>
             <option v-for="minute in minutes" :key="minute" :value="minute">
               {{ minute }}
             </option>
@@ -273,7 +273,6 @@
 </template>
 
 <script>
-import { getTime } from 'date-fns'
 import Month from '../modules/month'
 export default {
   props: {
@@ -282,19 +281,19 @@ export default {
   },
   data () {
     return {
-      days: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+      days: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
       hours: [],
-      minutes: [],
-      month: new Month(new Intl.DateTimeFormat('fr-FR', {month: 'numeric'}).format(new Date(this.date)), new Intl.DateTimeFormat('fr-FR', {year: 'numeric'}).format(new Date(this.date))),
-      hour: parseInt(new Intl.DateTimeFormat('fr-FR', {hour: '2-digit'}).format(new Date(this.date))),
-      minute: new Intl.DateTimeFormat('fr-FR', {minute: '2-digit'}).format(new Date(this.date)),
-      lastdate: new Date(this.date),
-      newdate: null
+      month: new Month(this.date.month(), this.date.year()),
+      hour: this.date.hour(),
+      minute: this.date.minute(),
+      lastdate: this.date,
+      newdate: null,
+      minutes: []
     }
   },
   methods: {
     Minutes: function () {
-      for (var i = 0; i < 60; i = i + 1) {
+      for (var i = 0; i < 60; i++) {
         this.minutes.push(String(i).padStart(2, '0'))
       }
       return this.minutes
@@ -306,20 +305,10 @@ export default {
       return this.hours
     },
     isSelected: function (day) {
-      return getTime(new Date(this.date).setHours(1, 1)) === getTime(new Date(day).setHours(1, 1))
+      return this.date.clone().set({h: 1, m: 1}).unix() === day.clone().set({h: 1, m: 1}).unix()
     },
     selectDate: function (day) {
-      this.newdate = new Date(day).setHours(this.hour, this.minute)
-      this.$emit('change', this.newdate)
-    },
-    selectHour: function (hour) {
-      this.hour = hour.target.value
-      this.newdate = new Date(this.date).setHours(this.hour, this.minute)
-      this.$emit('change', this.newdate)
-    },
-    selectMinute: function (minute) {
-      this.minute = minute.target.value
-      this.newdate = new Date(this.date).setHours(this.hour, this.minute)
+      this.newdate = day.clone().set({h: this.hour, m: this.minute})
       this.$emit('change', this.newdate)
     },
     nextMonth: function () {
@@ -345,21 +334,20 @@ export default {
       this.$emit('cancel', this.lastdate)
     },
     submitDate: function () {
-      this.newdate = new Date(this.date).setHours(this.hour, this.minute)
+      this.newdate = this.date.clone().set({h: this.hour, m: this.minute})
       this.$emit('submit', this.newdate)
     }
   },
   computed: {
-    year: function () {
-      return new Intl.DateTimeFormat('fr-FR', {year: 'numeric'}).format(new Date(this.date))
+    year () {
+      return this.date.format('Y')
     },
-    date_formatted: function () {
-      let jour = new Intl.DateTimeFormat('fr-FR', {weekday: 'long'}).format(new Date(this.date))
-      let chiffre = new Intl.DateTimeFormat('fr-FR', {day: '2-digit'}).format(new Date(this.date))
+    date_formatted () {
+      let jour = this.date.format('dddd')
       let jourletter = jour.charAt(0).toUpperCase() + jour.slice(1)
-      let month = new Intl.DateTimeFormat('fr-FR', {month: 'short'}).format(new Date(this.date))
+      let month = this.date.format('MMMM')
       let monthletter = month.charAt(0).toUpperCase() + month.slice(1)
-      return jourletter + ' ' + chiffre + ' ' + monthletter
+      return jourletter + this.date.format(' DD ') + monthletter
     }
   },
   mounted () {

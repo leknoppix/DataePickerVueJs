@@ -1,23 +1,25 @@
-import { format, eachDayOfInterval } from 'date-fns'
+import Moment from 'moment'
+import { extendMoment } from 'moment-range'
+const moment = extendMoment(Moment)
 
 export default class Month {
   constructor (month, year) {
-    this.month = parseInt(month)
-    this.year = parseInt(year)
-    this.start = new Date(this.year, this.month - 1, 1)
-    this.end = new Date(this.year, this.month, 0)
+    this.start = moment([year, month])
+    this.end = this.start.clone().endOf('month')
+    this.month = month
+    this.year = year
   }
 
   getWeekStart () {
-    return format(this.start, 'i')
+    return this.start.weekday()
   }
 
   getDays () {
-    let range = eachDayOfInterval({start: new Date(this.start), end: new Date(this.end)})
-    return range
+    let range = moment.range(this.start, this.end)
+    return Array.from(range.by('days'))
   }
 
   getMonthLetter () {
-    return new Intl.DateTimeFormat('fr-FR', {month: 'long', year: 'numeric'}).format(new Date(this.start)).toUpperCase()
+    return this.start.format('MMMM YYYY').toUpperCase()
   }
 }

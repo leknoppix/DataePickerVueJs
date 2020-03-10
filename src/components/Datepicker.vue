@@ -13,10 +13,9 @@
 </template>
 
 <script>
-// import moment from 'moment'
-import { format } from 'date-fns'
+import moment from 'moment'
 import DatepickerAgendaComponent from './DatepickerAgenda'
-// moment.locale('fr')
+moment.locale('fr')
 
 export default {
   components: {
@@ -24,22 +23,15 @@ export default {
   },
   props: {
     value: {type: String, required: true},
-    format: {type: String, default: 'yyyy-LL-dd k:mm:ss'},
+    format: {type: String, default: 'YYYY-MM-DD hh:mm:ss'},
     name: {type: String}
   },
   data: function () {
     return {
       isVisible: false,
-      date: format(new Date(this.value), 'yyyy-LL-dd k:mm:ss') // date: moment(this.value, 'YYYY-MM-DD hh:mm:ss')
+      date: moment(this.value, 'YYYY-MM-DD hh:mm:ss')
     }
   },
-  /* created: function () {
-    this.isVisible = false
-    setTimeout(() => document.addEventListener('click', this.hideDatepicker), 0)
-  },
-  destroyed: function () {
-    document.removeEventListener('click', this.hideDatepicker)
-  }, */
   methods: {
     SelectDate: function (date) {
       this.date = date
@@ -58,11 +50,11 @@ export default {
     }
   },
   computed: {
-    date_formatted: function () { // this.date.format(this.format)
-      return format(new Date(this.date), this.format)
+    date_formatted: function () {
+      return this.date.format(this.format)
     },
-    date_raw: function () { // this.date.format('YYYY-MM-DD HH:mm:ss')
-      return format(new Date(this.date), 'yyyy-LL-dd k:mm:ss')
+    date_raw: function () {
+      return this.date.format('YYYY-MM-DD HH:mm:ss')
     }
   }
 
