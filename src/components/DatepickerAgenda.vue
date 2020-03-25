@@ -1,12 +1,12 @@
 <style lang="scss">
   $header-height: 60px;
-  $day-size: 41px;
+  $day-size: 46px;
   $color: #0097a7;
   .datepicker{
     font-family: 'Roboto', sans-serif;
     position: absolute;
     top:100%;
-    width: 315px;
+    width: 360px;
     z-index:5;
     background-color: #fff;
     box-shadow: 0 14px 45px rgba(0,0,0,0.25), 0 10px 18px rgba(0,0,0,0.22);
@@ -40,7 +40,8 @@
   .datepicker__days{
     margin: 14px;
     margin-bottom: 0;
-    height: $day-size * 5;
+    min-height: $day-size * 5;
+    height: auto;
   }
   .datepicker__day{
     position: relative;
@@ -54,11 +55,11 @@
   }
   .datepicker__day__effect{
     position: absolute;
-    top:2px;
-    left: 2px;
+    top:1px;
+    left: 1px;
     background-color: rgb(0,151,167);
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     transition: color 450ms cubic-bezier(0.23,1,0.32,1);
     transform: scale(0);
@@ -241,24 +242,24 @@
         </div>
       </div>
       <div class="datepicker__days">
-        <div class="datepicker__day" v-bind:style="{width: ( month.getWeekStart() * 41 ) + 'px' }"></div>
-        <div class="datepicker__day" v-on:click="selectDate(day)" v-for="day in month.getDays()" :key="day.id" :class="{selected: isSelected(day)}">
+        <div class="datepicker__day" v-bind:style="{width: ( month.getWeekStart() * 46 ) + 'px' }"></div>
+        <div class="datepicker__day" v-on:click="ChangeDate(day)" v-for="day in month.getDays()" :key="day.id" :class="{selected: isSelected(day)}">
           <span class="datepicker__day__effect"></span>
-          <span class="datepicker__day__text">{{ day.format('D') }}</span>
+          <span class="datepicker__day__text">{{ new Date(day).getDate() }}</span>
         </div>
       </div>
       <div class="datepicker__schedule">
         <div class="datepicker__schedule__hour">
-          <select>
-            <option v-for="hour in hours" :key="hour" :value="hour">
+          <select v-on:change="ChangeHour($event)" id="hour">
+            <option v-for="hour in hours" :key="hour" :value="hour" v-bind:selected="selectHour(hour)">
               {{ hour }}
             </option>
           </select>
         </div>
         <div class="datepicker__schedule__separator">:</div>
         <div class="datepicker__schedule__minute">
-          <select>
-            <option v-for="minute in minutes" :key="minute" :value="minute">
+          <select v-on:change="ChangeMinute($event)"  id="minute">
+            <option v-for="minute in minutes" :key="minute" :value="minute" v-bind:selected="selectMinute(minute)">
               {{ minute }}
             </option>
           </select>
@@ -283,12 +284,13 @@ export default {
     return {
       days: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
       hours: [],
-      month: new Month(this.date.month(), this.date.year()),
-      hour: this.date.hour(),
-      minute: this.date.minute(),
+      month: new Month(new Date(this.date).getUTCMonth(), new Date(this.date).getFullYear()),
+      hour: new Date(this.date).getHours(),
+      minute: new Date(this.date).getMinutes(),
       lastdate: this.date,
       newdate: null,
-      minutes: []
+      minutes: [],
+      height: '46'
     }
   },
   methods: {
@@ -305,10 +307,44 @@ export default {
       return this.hours
     },
     isSelected: function (day) {
-      return this.date.clone().set({h: 1, m: 1}).unix() === day.clone().set({h: 1, m: 1}).unix()
+      var comparedate = new Date(this.date)
+      comparedate.setHours(1)
+      comparedate.setMinutes(1)
+      comparedate = comparedate.getTime()
+      var compareday = new Date(day)
+      compareday.setHours(1)
+      compareday.setMinutes(1)
+      compareday = compareday.getTime()
+      return comparedate === compareday
     },
-    selectDate: function (day) {
-      this.newdate = day.clone().set({h: this.hour, m: this.minute})
+    selectHour: function (hour) {
+      if (String(this.hour) === hour) {
+        return 'selected'
+      }
+    },
+    selectMinute: function (minute) {
+      if (String(this.minute) === minute) {
+        return 'selected'
+      }
+    },
+    ChangeDate: function (day) {
+      const h = document.getElementById('hour')
+      const hour = h.options[h.selectedIndex].text
+      const m = document.getElementById('minute')
+      const minute = m.options[m.selectedIndex].text
+      this.newdate = new Date(day)
+      this.newdate.setHours(hour)
+      this.newdate.setMinutes(minute)
+      this.$emit('change', this.newdate)
+    },
+    ChangeHour: function (event) {
+      this.newdate = new Date(this.date)
+      this.newdate.setHours(event.target.value)
+      this.$emit('change', this.newdate)
+    },
+    ChangeMinute: function (event) {
+      this.newdate = new Date(this.date)
+      this.newdate.setMinutes(event.target.value)
       this.$emit('change', this.newdate)
     },
     nextMonth: function () {
@@ -319,6 +355,7 @@ export default {
         month = 1
       }
       this.month = new Month(month, year)
+      console.log(this.month.numberweek)
     },
     prevMonth: function () {
       let month = this.month.month - 1
@@ -334,20 +371,29 @@ export default {
       this.$emit('cancel', this.lastdate)
     },
     submitDate: function () {
-      this.newdate = this.date.clone().set({h: this.hour, m: this.minute})
+      const h = document.getElementById('hour')
+      const hour = h.options[h.selectedIndex].text
+      const m = document.getElementById('minute')
+      const minute = m.options[m.selectedIndex].text
+      this.newdate = new Date(this.date)
+      this.newdate.setHours(hour)
+      this.newdate.setMinutes(minute)
       this.$emit('submit', this.newdate)
     }
   },
   computed: {
     year () {
-      return this.date.format('Y')
+      return new Date(this.date).getFullYear()
     },
     date_formatted () {
-      let jour = this.date.format('dddd')
+      const date = new Date(this.date)
+      const optionsdays = {weekday: 'long'}
+      let jour = date.toLocaleDateString('fr-FR', optionsdays)
       let jourletter = jour.charAt(0).toUpperCase() + jour.slice(1)
-      let month = this.date.format('MMMM')
+      const optionsmonths = {month: 'long'}
+      let month = date.toLocaleDateString('fr-FR', optionsmonths)
       let monthletter = month.charAt(0).toUpperCase() + month.slice(1)
-      return jourletter + this.date.format(' DD ') + monthletter
+      return jourletter + ' ' + String(date.getUTCDate()).padStart(2, '0') + ' ' + monthletter
     }
   },
   mounted () {

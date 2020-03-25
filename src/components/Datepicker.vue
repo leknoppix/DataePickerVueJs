@@ -7,15 +7,13 @@
 <template>
   <div class="datepicker__agenda">
     <input type="text" :value="date_formatted" @click="showDatepicker">
-    <input type="hidden" :name="name" :value="date_raw">
+    <input type="text" :name="name" :value="date_raw">
     <datepicker-agenda @change="SelectDate" :date="date" :visible="isVisible" @cancel="hideDatepicker" @submit="SubmitDatepicker"></datepicker-agenda>
   </div>
 </template>
 
 <script>
-import moment from 'moment'
 import DatepickerAgendaComponent from './DatepickerAgenda'
-moment.locale('fr')
 
 export default {
   components: {
@@ -23,13 +21,14 @@ export default {
   },
   props: {
     value: {type: String, required: true},
-    format: {type: String, default: 'YYYY-MM-DD hh:mm:ss'},
     name: {type: String}
   },
   data: function () {
+    const dateinit = new Date(this.value)
     return {
       isVisible: false,
-      date: moment(this.value, 'YYYY-MM-DD hh:mm:ss')
+      date: dateinit.getFullYear() + '-' + String(dateinit.getUTCMonth() + 1).padStart(2, '0') + '-' + String(dateinit.getDate()).padStart(2, '0') + ' ' + dateinit.getHours() + ':' + dateinit.getMinutes() + ':00',
+      date_raw: dateinit.getFullYear() + '-' + String(dateinit.getUTCMonth() + 1).padStart(2, '0') + '-' + String(dateinit.getDate()).padStart(2, '0') + ' ' + dateinit.getHours() + ':' + dateinit.getMinutes() + ':00'
     }
   },
   methods: {
@@ -46,15 +45,20 @@ export default {
     },
     SubmitDatepicker: function (date) {
       this.date = date
+      const $newdate = new Date(this.date)
+      this.date_raw = $newdate.getFullYear() + '-' + String($newdate.getUTCMonth() + 1).padStart(2, '0') + '-' + String($newdate.getDate()).padStart(2, '0') + ' ' + $newdate.getHours() + ':' + $newdate.getMinutes() + ':00'
       this.hideDatepicker()
     }
   },
   computed: {
     date_formatted: function () {
-      return this.date.format(this.format)
-    },
-    date_raw: function () {
-      return this.date.format('YYYY-MM-DD HH:mm:ss')
+      const datereturn = new Date(this.date)
+      const day = String(datereturn.getUTCDate()).padStart(2, '0')
+      const month = String(datereturn.getUTCMonth() + 1).padStart(2, '0')
+      const year = datereturn.getFullYear()
+      const hour = datereturn.getHours()
+      const minute = datereturn.getMinutes()
+      return day + '-' + month + '-' + year + ' ' + hour + ':' + minute
     }
   }
 
