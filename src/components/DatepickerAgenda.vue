@@ -241,8 +241,7 @@
           {{ day }}
         </div>
       </div>
-      <div class="datepicker__days">
-        <div class="datepicker__day" v-bind:style="{width: ( month.getWeekStart() * 46 ) + 'px' }"></div>
+      <div class="datepicker__days" :style="{height: month.getDates(month.start, month.end).length / 7 * 46 + 'px' }">
         <div class="datepicker__day" v-on:click="ChangeDate(day)" v-for="day in month.getDays()" :key="day.id" :class="{selected: isSelected(day)}">
           <span class="datepicker__day__effect"></span>
           <span class="datepicker__day__text">{{ new Date(day).getDate() }}</span>
@@ -329,9 +328,9 @@ export default {
     },
     ChangeDate: function (day) {
       const h = document.getElementById('hour')
-      const hour = h.options[h.selectedIndex].text
+      const hour = String(h.options[h.selectedIndex].text).padStart(2, '0')
       const m = document.getElementById('minute')
-      const minute = m.options[m.selectedIndex].text
+      const minute = String(m.options[m.selectedIndex].text).padStart(2, '0')
       this.newdate = new Date(day)
       this.newdate.setHours(hour)
       this.newdate.setMinutes(minute)
@@ -372,9 +371,9 @@ export default {
     },
     submitDate: function () {
       const h = document.getElementById('hour')
-      const hour = h.options[h.selectedIndex].text
+      const hour = String(h.options[h.selectedIndex].text).padStart(2, '0')
       const m = document.getElementById('minute')
-      const minute = m.options[m.selectedIndex].text
+      const minute = String(m.options[m.selectedIndex].text).padStart(2, '0')
       this.newdate = new Date(this.date)
       this.newdate.setHours(hour)
       this.newdate.setMinutes(minute)

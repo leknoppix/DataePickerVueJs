@@ -3,12 +3,9 @@ export default class Month {
     var firstDay = new Date(year, month, 1)
     var lastDay = new Date(year, month + 1, 0)
     this.start = firstDay
-    this.startweeknumber = this.getWeekNumber(this.start)
     this.end = lastDay
-    this.endweeknumber = this.getWeekNumber(this.end)
     this.month = month
     this.year = year
-    this.numberweek = this.endweeknumber - this.startweeknumber
   }
 
   getWeekStart () {
@@ -25,11 +22,29 @@ export default class Month {
   }
 
   getDates (startDate, endDate) {
-    var dates = []
-    var currentDate = startDate
-    while (currentDate <= endDate) {
-      dates.push(currentDate)
-      currentDate = this.addDays.call(currentDate, 1)
+    let dates = []
+    let datestart = startDate
+    let dayOfWeek = startDate.getDay() - 1
+    if (dayOfWeek === -1) { dayOfWeek = 6 }
+    if (dayOfWeek > 0) {
+      for (let i = dayOfWeek; i > 0; i--) {
+        let date = new Date(startDate)
+        date.setDate(i * -1 + 1)
+        dates.push(date)
+      }
+    }
+    while (datestart <= endDate) {
+      dates.push(datestart)
+      datestart = this.addDays.call(datestart, 1)
+    }
+    dayOfWeek = endDate.getDay() - 1
+    if (dayOfWeek === -1) { dayOfWeek = 6 }
+    if (dayOfWeek < 6) {
+      for (let i = 0; i < (6 - dayOfWeek); i++) {
+        let date = new Date(endDate)
+        date.setDate(endDate.getDate() + i + 1)
+        dates.push(date)
+      }
     }
     return dates
   }
@@ -38,13 +53,5 @@ export default class Month {
     var date = new Date(this.valueOf())
     date.setDate(date.getDate() + days)
     return date
-  }
-
-  getWeekNumber (d) {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
-    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
-    return weekNo
   }
 }

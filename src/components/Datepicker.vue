@@ -7,7 +7,7 @@
 <template>
   <div class="datepicker__agenda">
     <input type="text" :value="date_formatted" @click="showDatepicker">
-    <input type="text" :name="name" :value="date_raw">
+    <input type="hidden" :name="name" :value="date_raw">
     <datepicker-agenda @change="SelectDate" :date="date" :visible="isVisible" @cancel="hideDatepicker" @submit="SubmitDatepicker"></datepicker-agenda>
   </div>
 </template>
